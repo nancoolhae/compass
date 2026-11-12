@@ -1,0 +1,7 @@
+CREATE TABLE fireflies (
+    sequence INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    emotion INTEGER NOT NULL,
+    strokes TEXT NOT NULL
+);

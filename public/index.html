@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06102A">
+  <meta name="description" content="COMPASS 졸업 전시에서 나만의 반딧불을 그리고 숲에 보내 보세요.">
+  <title>COMPASS 반딧불 숲</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main id="journey" hidden>
+    <section class="frame" id="start" aria-label="COMPASS 시작" hidden>
+      <img class="art" src="/art/start.svg" alt="">
+      <button class="hotspot start-button" type="button" aria-label="START"></button>
+    </section>
+    <section class="frame" id="compass" aria-label="마음 나침반" hidden>
+      <img class="compass-heading" src="/art/compass-heading.svg?v=2" alt="다른 사람과 나를 비교할 때, 어떤 감정을 느끼나요?">
+      <div id="carousel" tabindex="0" role="group" aria-roledescription="카드 목록" aria-label="감정 카드. 드래그하거나 왼쪽과 오른쪽 방향키로 이동">
+        <div id="cards" aria-hidden="true"></div>
+      </div>
+      <div id="swatch" aria-hidden="true"></div>
+      <img id="pink-label" class="art" src="/art/pink.svg" alt="">
+      <span id="color-name" aria-hidden="true"></span>
+      <span class="visually-hidden" id="selected-emotion" aria-live="polite"></span>
+      <button class="hotspot choose-button" type="button" aria-label="선택하기">
+        <img src="/art/choose-label.svg" alt="">
+      </button>
+    </section>
+    <section class="frame" id="drawing" aria-label="반딧불 그리기" hidden>
+      <img class="art" src="/art/drawing.svg" alt="나만의 반딧불을 그려주세요!">
+      <img class="art" id="hint" src="/art/hint.svg" alt="손가락으로 자유롭게 그려보세요!">
+      <div id="drawing-pad">
+        <canvas id="ink" width="700" height="662" aria-label="손가락으로 반딧불을 그리는 영역"></canvas>
+      </div>
+      <button type="button" class="undo" aria-label="한 획 되돌리기" disabled>
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M10 5 4 11l6 6M4 11h12a7 7 0 0 1 0 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <form id="firefly-form">
+        <img class="art" id="placeholder" src="/art/placeholder.svg" alt="">
+        <input id="visitor-name" aria-label="Your name" placeholder="Your name" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" required>
+        <p id="form-status" role="status" hidden></p>
+        <button class="hotspot send-button" type="submit" aria-label="반딧불을 숲에 보내기"></button>
+      </form>
+      <button class="hotspot back-button" type="button" aria-label="이전 화면으로 가기"></button>
+    </section>
+  </main>
+  <main id="forest" hidden>
+    <picture class="landscape">
+      <source media="(min-width: 700px)" srcset="/art/forest-wide-landscape.svg">
+      <img src="/art/forest-phone-landscape.svg" alt="">
+    </picture>
+    <picture class="forest-heading">
+      <source media="(min-width: 700px)" srcset="/art/forest-wide-heading.svg">
+      <img src="/art/forest-phone-heading.svg" alt="COMPASS. 저마다 다른 반딧불을 구경해 보세요!">
+    </picture>
+    <div class="forest-filters">
+      <details id="emotion-filter" class="emotion-filter">
+        <summary class="filter-trigger">
+          <span id="filter-swatch" class="filter-dot" aria-hidden="true"></span>
+          <span class="visually-hidden">감정별로 반딧불 보기, </span>
+          <span id="filter-label">모든 감정</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div id="emotion-options" class="emotion-options" role="group" aria-label="감정 선택"></div>
+      </details>
+    </div>
+    <div id="forest-scroll" tabindex="0" aria-label="숲에 도착한 반딧불">
+      <div id="fireflies"></div>
+      <button type="button" id="more" hidden>반딧불 더 보기</button>
+    </div>
+    <p id="forest-status" role="status" hidden></p>
+  </main>
+</body>
+</html>
