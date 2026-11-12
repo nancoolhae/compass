@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#06102A">
+  <meta name="description" content="COMPASS 졸업 전시에서 나만의 반딧불을 그리고 숲에 보내 보세요.">
+  <title>COMPASS 반딧불 숲</title>
+  <style>
+:root {
+  font-family: Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color: #141414;
+  background: #fafafa;
+  font-synthesis: none;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+#journey { --available-height: 100vh; }
+@supports (height: 100dvh) {
+  #journey { --available-height: 100dvh; }
+}
+[hidden] { display: none !important; }
+button, input { font: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
+  outline: 2px solid #43d19d;
+  outline-offset: -2px;
+}
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.frame {
+  width: min(100%, 430px, calc(var(--visible-height, var(--available-height)) * 390 / 844));
+  margin: 0 auto;
+  aspect-ratio: 390 / 844;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  container-type: inline-size;
+  background: #fafafa;
+}
+.art {
+  width: 100%; height: 100%; position: absolute; inset: 0;
+  pointer-events: none; user-select: none;
+}
+.hotspot {
+  position: absolute; border: 0; border-radius: 12px; background: transparent; padding: 0;
+  left: 5.128%; width: 89.744%; height: 6.635%;
+}
+.start-button { top: 88.507%; }
+.compass-heading {
+  position: absolute; top: 0; left: 0;
+  width: 100%; pointer-events: none;
+}
+.choose-button {
+  top: 88.67%;
+  left: 5.064%;
+  width: 89.816%;
+  height: 6.527%;
+  border-radius: 2.665cqw;
+  background: #43d19d;
+  display: grid; place-items: center;
+}
+.choose-button img { width: 17.95cqw; display: block; pointer-events: none; }
+.send-button { top: 80.924%; }
+.back-button { top: 88.507%; }
+.send-button:disabled { background: #fafafa38; cursor: wait; }
+#carousel {
+  position: absolute; inset: 26% 0 24%;
+  touch-action: pan-y; cursor: grab; user-select: none;
+}
+#carousel.dragging { cursor: grabbing; }
+#cards {
+  position: absolute; inset: 0 auto 0 50%;
+  width: 100cqw; transform: translateX(-50%); pointer-events: none;
+}
+@media (max-width: 699px) {
+  #journey { overflow-x: clip; }
+  #compass { overflow: visible; }
+  #carousel { inset-inline: auto; left: 50%; width: 100vw; transform: translateX(-50%); }
+}
+.card {
+  position: absolute;
+  left: calc(50% - 43.846cqw);
+  top: 2.781cqw;
+  width: 87.692cqw;
+  transform-origin: 4.678% 3.883%;
+  transform: translate(var(--x), var(--y)) rotate(var(--angle)) scale(var(--scale));
+  transition: transform .3s cubic-bezier(.2,.75,.28,1), opacity .25s ease;
+}
+.dragging .card { transition: none; }
+#swatch {
+  position: absolute; left: 46.41%; top: 76.777%; width: 7.18%;
+  aspect-ratio: 1; border-radius: 50%;
+}
+#swatch[data-light] { box-shadow: inset 0 0 0 1px #dcdce5; }
+#color-name {
+  position: absolute; inset: 81.43% 0 auto;
+  text-align: center; color: #6e6f76; font-size: 3.59cqw; line-height: 1.18;
+}
+#drawing-pad {
+  position: absolute; left: 5.128%; top: 20.261%; width: 89.744%; height: 39.218%;
+  overflow: hidden; border-radius: 2.564cqw;
+}
+#ink { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.undo {
+  position: absolute; top: 50.948%; left: 76.41%; width: 13.333%;
+  aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center;
+  padding: 0; border: 0; background: #73757f; color: #fafafa;
+}
+.undo svg { width: 48%; height: 48%; }
+.undo:disabled { color: #3d3f49; cursor: default; }
+#visitor-name {
+  position: absolute; left: 5.128%; top: 68.72%; width: 74.103%; height: 5.51%;
+  border: 0; padding: 0 1.03cqw; background: transparent; color: #141414;
+  border-radius: 0; font-size: max(16px, 4.1cqw); outline: none;
+}
+#visitor-name::placeholder { color: transparent; }
+#visitor-name:focus { box-shadow: inset 0 -1px #43d19d; }
+#form-status {
+  position: absolute; top: 75.4%; left: 5.128%; right: 5.128%; margin: 0;
+  color: #942742; font-size: 3.33cqw;
+}
+#forest {
+  position: fixed; inset: 0; color: #fafafa; background: #06102a; overflow: hidden;
+  --heading-height: clamp(130px, 40.5vw, 230px);
+  --filter-height: 50px;
+  --filter-inset: 5.128vw;
+  --float-distance: -18px;
+}
+.landscape, .forest-heading { position: absolute; inset: auto 0 0; pointer-events: none; }
+.landscape img, .forest-heading img { display: block; width: 100%; }
+.forest-heading { top: 0; bottom: auto; }
+.forest-filters {
+  position: absolute; top: var(--heading-height); left: var(--filter-inset);
+  z-index: 2; display: flex; align-items: flex-start; height: var(--filter-height);
+}
+.emotion-filter { position: relative; }
+.filter-trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 0 12px; border-radius: 999px;
+  color: #fafafa; border: 1px solid #46526c; background: #121e38;
+  font-size: 14px; white-space: nowrap; cursor: pointer; list-style: none;
+}
+.filter-trigger::-webkit-details-marker { display: none; }
+.filter-trigger:focus-visible { outline: 2px solid #43d19d; outline-offset: 2px; }
+.filter-trigger svg { width: 16px; height: 16px; color: #c6cddd; }
+.emotion-filter[open] .filter-trigger svg { transform: rotate(180deg); }
+.filter-dot {
+  flex: 0 0 12px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--filter-color); border: 1px solid #ffffff30;
+}
+.emotion-options {
+  position: absolute; top: calc(100% + 6px); left: 0;
+  width: min(190px, calc(100vw - 2 * var(--filter-inset)));
+  max-height: calc(100vh - var(--heading-height) - 60px);
+  max-height: calc(100dvh - var(--heading-height) - 60px);
+  overflow-y: auto; overscroll-behavior: contain; padding: 4px;
+  border: 1px solid #46526c; border-radius: 14px;
+  background: #121e38; box-shadow: 0 8px 24px #0005;
+}
+.emotion-options button {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; min-height: 44px; padding: 0 10px; border: 0;
+  border-radius: 9px; background: transparent; color: #fafafa;
+  font-size: 14px; text-align: left;
+}
+.emotion-options button:hover, .emotion-options button[aria-pressed="true"] {
+  background: #23304e;
+}
+.emotion-options button[aria-pressed="true"]::after {
+  content: ''; width: 8px; height: 4px; margin-inline-start: auto;
+  border-left: 2px solid #43d19d; border-bottom: 2px solid #43d19d;
+  transform: translateY(-1px) rotate(-45deg);
+}
+#forest-scroll {
+  position: absolute; inset: calc(var(--heading-height) + var(--filter-height)) 0 0;
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: none;
+}
+#forest-scroll::-webkit-scrollbar { display: none; }
+#fireflies {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center;
+  gap: clamp(40px, 13vw, 90px) 0; padding: clamp(47px, 14vw, 90px) 0 90px;
+}
+.firefly {
+  margin: 0; min-width: 0; text-align: center; color: var(--ink);
+  display: flex; flex-direction: column; justify-content: end; align-items: center;
+  min-height: clamp(92px, 29vw, 160px);
+}
+.firefly:nth-child(even) { transform: translateY(23%); }
+@media (prefers-reduced-motion: no-preference) {
+  .firefly {
+    animation: float-firefly var(--float-period) ease-in-out var(--float-delay) infinite;
+  }
+  @keyframes float-firefly {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 var(--float-distance); }
+  }
+}
+.firefly svg {
+  width: clamp(50px, 15vw, 105px); height: clamp(50px, 15vw, 105px);
+  overflow: visible;
+}
+.firefly figcaption {
+  font-size: clamp(10px, 2.56vw, 16px); line-height: 1.35; margin: 7px 10px 0;
+  overflow-wrap: anywhere; max-width: 95%;
+}
+#more {
+  display: block; margin: 0 auto 30px; color: #fafafa; background: #10242f;
+  border: 1px solid #364759; border-radius: 8px; padding: 10px 16px;
+}
+#forest-status {
+  position: absolute; margin: 0; inset: auto 16px 20px;
+  text-align: center; pointer-events: none; font-size: 13px;
+}
+@media (min-width: 700px) {
+  #forest { --heading-height: max(80px, 9.9vw); --filter-inset: 3.125vw; --float-distance: -7px; }
+  #forest-scroll { overflow-x: auto; overflow-y: hidden; display: flex; cursor: grab; }
+  #forest-scroll.dragging { cursor: grabbing; user-select: none; }
+  #fireflies {
+    flex: 0 0 auto; min-width: 100%; height: 100%;
+    grid-template-columns: none; grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column; grid-auto-columns: min(23vw, 390px);
+    gap: 0; padding: 1vh 2vw 18vh;
+  }
+  .firefly, .firefly:nth-child(even) { transform: none; min-height: 0; }
+  .firefly:nth-child(4n+2) { transform: translateX(13%); }
+  .firefly svg { width: min(10vw, 18vh, 170px); height: min(10vw, 18vh, 170px); }
+  .firefly figcaption { font-size: clamp(13px, 1.1vw, 22px); }
+  #more { flex: 0 0 auto; align-self: center; margin: 0 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+
+</style>
+  <script type="module">
+const palette = [{"emotion":"부러움","name":"Mint green","color":"#43D19D"},{"emotion":"낙오감","name":"Sky blue","color":"#60A9F0"},{"emotion":"질투심","name":"Pink","color":"#F87797"},{"emotion":"자극받음","name":"Yellow","color":"#FFDE51"},{"emotion":"초조함","name":"White","color":"#FAFAFA"},{"emotion":"의기소침","name":"Blue","color":"#3555CC"}];
+const pagesBackend = "https://compass-firefly-exhibition.kwzzah.chatgpt.site";
+const byId = id => document.getElementById(id);
+const journey = byId('journey');
+const forest = byId('forest');
+const carousel = byId('carousel');
+const cardTrack = byId('cards');
+const cards = palette.map(({emotion}, index) => {
+  const img = new Image();
+  img.className = 'card';
+  img.alt = emotion;
+  img.src = `${pagesBackend}/art/card-${index + 1}.svg?v=2`;
+  img.draggable = false;
+  cardTrack.append(img);
+  return img;
+});
+const count = cards.length;
+let active = 0;
+let cardDrag;
+const poses = [
+  [-526, 94, -12, .72], [-263, 73.366, -7, .77935],
+  [0, 0, 0, 1], [333.299, 43.922, 7, .77935], [666, 88, 12, .72],
+];
+
+function placeCards(progress = 0) {
+  for (const [index, card] of cards.entries()) {
+    const relative = (index - active + count + 3) % count - 3 + progress;
+    const position = Math.max(0, Math.min(4, relative + 2));
+    const left = Math.floor(position);
+    const right = Math.min(4, left + 1);
+    const [x, y, angle, scale] = poses[left].map((value, axis) =>
+      value + (poses[right][axis] - value) * (position - left));
+    card.style.setProperty('--x', `${x / 3.9}cqw`);
+    card.style.setProperty('--y', `${y / 3.9}cqw`);
+    card.style.setProperty('--angle', `${angle}deg`);
+    card.style.setProperty('--scale', scale);
+    card.style.zIndex = Math.round(10 - Math.abs(relative) * 2);
+    card.style.opacity = Math.abs(relative) > 2 ? 0 : 1;
+  }
+}
+
+function selectCard(index) {
+  active = (index + count) % count;
+  const { emotion, name, color } = palette[active];
+  const swatch = byId('swatch');
+  swatch.style.backgroundColor = color;
+  swatch.toggleAttribute('data-light', name === 'White');
+  byId('pink-label').hidden = name !== 'Pink';
+  const label = byId('color-name');
+  label.hidden = name === 'Pink';
+  label.textContent = name;
+  byId('selected-emotion').textContent = `${active + 1}/${count} ${emotion}, ${name}`;
+  placeCards();
+}
+
+carousel.addEventListener('pointerdown', event => {
+  if (cardDrag || !event.isPrimary || event.button !== 0) return;
+  cardDrag = { id: event.pointerId, x: event.clientX, time: performance.now() };
+  carousel.setPointerCapture(event.pointerId);
+  carousel.classList.add('dragging');
+});
+carousel.addEventListener('pointermove', event => {
+  if (cardDrag?.id !== event.pointerId) return;
+  const dx = event.clientX - cardDrag.x;
+  placeCards(Math.max(-1, Math.min(1, dx / (cardTrack.clientWidth * .72))));
+});
+function endDrag(event) {
+  if (cardDrag?.id !== event.pointerId) return;
+  const dx = event.clientX - cardDrag.x;
+  const elapsed = performance.now() - cardDrag.time;
+  cardDrag = null;
+  carousel.classList.remove('dragging');
+  const threshold = elapsed < 220 ? 20 : cardTrack.clientWidth * .12;
+  selectCard(event.type === 'pointerup' && Math.abs(dx) >= threshold ? active - Math.sign(dx) : active);
+}
+for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) carousel.addEventListener(event, endDrag);
+carousel.addEventListener('keydown', event => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  event.preventDefault();
+  selectCard(active + (event.key === 'ArrowRight' ? 1 : -1));
+});
+selectCard(0);
+
+const canvas = byId('ink');
+const ctx = canvas.getContext('2d');
+const hint = byId('hint');
+const undo = document.querySelector('.undo');
+const nameInput = byId('visitor-name');
+const form = byId('firefly-form');
+const send = document.querySelector('.send-button');
+const formStatus = byId('form-status');
+const visualViewport = window.visualViewport;
+
+function fitJourney() {
+  // Leave the layout steady while the native keyboard pans to the field.
+  if (document.activeElement === nameInput || (visualViewport && visualViewport.scale !== 1)) return;
+  const height = Math.floor(visualViewport?.height ?? window.innerHeight);
+  if (height > 0) journey.style.setProperty('--visible-height', `${height}px`);
+}
+window.addEventListener('resize', fitJourney);
+visualViewport?.addEventListener('resize', fitJourney);
+nameInput.addEventListener('blur', () => requestAnimationFrame(fitJourney));
+fitJourney();
+
+let strokes = [];
+let current;
+let sending = false;
+let submissionId;
+
+function drawInk() {
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.clearRect(0, 0, 350, 331);
+  ctx.lineWidth = 7;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = ctx.fillStyle = palette[active].color;
+  for (const points of strokes) {
+    const [[x, y]] = points;
+    ctx.beginPath();
+    if (points.length === 1) {
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.moveTo(x, y);
+      for (const [px, py] of points.slice(1)) ctx.lineTo(px, py);
+      ctx.stroke();
+    }
+  }
+  hint.hidden = strokes.length > 0;
+  undo.disabled = strokes.length === 0;
+}
+
+function point(event, bounds) {
+  const scale = (value, start, span, max) => Math.round(Math.max(0, Math.min(max, (value - start) / span * max)) * 10) / 10;
+  return [scale(event.clientX, bounds.left, bounds.width, 350), scale(event.clientY, bounds.top, bounds.height, 331)];
+}
+canvas.addEventListener('pointerdown', event => {
+  if (current || sending || !event.isPrimary || event.button !== 0 || strokes.length >= 200) return;
+  const points = [point(event, canvas.getBoundingClientRect())];
+  strokes.push(points);
+  current = { id: event.pointerId, points, available: 4000 - strokes.reduce((sum, stroke) => sum + stroke.length, 0) };
+  if (current.available < 0) {
+    strokes.pop();
+    current = null;
+    return;
+  }
+  canvas.setPointerCapture(event.pointerId);
+  drawInk();
+});
+canvas.addEventListener('pointermove', event => {
+  if (current?.id !== event.pointerId) return;
+  const bounds = canvas.getBoundingClientRect();
+  const samples = event.getCoalescedEvents?.();
+  for (const sample of samples?.length ? samples : [event]) {
+    const next = point(sample, bounds);
+    const [x, y] = current.points.at(-1);
+    if (!current.available || Math.hypot(next[0] - x, next[1] - y) < .9) continue;
+    current.points.push(next);
+    current.available--;
+  }
+  drawInk();
+});
+for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  canvas.addEventListener(eventName, event => {
+    if (current?.id === event.pointerId) current = null;
+  });
+}
+undo.addEventListener('click', () => {
+  if (sending || current) return;
+  strokes.pop();
+  drawInk();
+});
+
+function syncName() {
+  byId('placeholder').hidden = Boolean(nameInput.value);
+}
+nameInput.addEventListener('input', syncName);
+document.addEventListener('pointerdown', event => {
+  if (document.activeElement === nameInput && event.target !== nameInput) nameInput.blur();
+});
+
+let galleryTimer;
+function renderRoute() {
+  const route = pagesBackend ? location.hash.slice(1) : location.pathname;
+  const screen = ({ '/compass': 'compass', '/draw': 'drawing', '/forest': 'forest' })[route] ?? 'start';
+  const next = screen === 'drawing' && history.state?.journey !== true ? 'start' : screen;
+  journey.hidden = next === 'forest';
+  forest.hidden = next !== 'forest';
+  for (const frame of journey.children) frame.hidden = frame.id !== next;
+  document.documentElement.style.background = next === 'forest' ? '#06102a' : '#fafafa';
+  window.scrollTo(0, 0);
+  clearInterval(galleryTimer);
+  if (next === 'forest') {
+    refreshForest();
+    galleryTimer = setInterval(refreshForest, 2500);
+  }
+}
+function navigate(url) {
+  history.pushState({ journey: true }, '', pagesBackend ? `#${url}` : url);
+  renderRoute();
+}
+window.addEventListener('popstate', renderRoute);
+document.querySelector('.start-button').onclick = () => navigate('/compass');
+document.querySelector('.choose-button').onclick = () => {
+  formStatus.hidden = true;
+  drawInk();
+  navigate('/draw');
+};
+document.querySelector('.back-button').onclick = () => navigate('/compass');
+
+function reportForm(text) {
+  formStatus.textContent = text;
+  formStatus.hidden = false;
+}
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (sending) return;
+  const name = nameInput.value.trim();
+  if (!name) {
+    reportForm('반딧불의 이름을 입력해주세요.');
+    nameInput.focus();
+    return;
+  }
+  if (!strokes.length) {
+    reportForm('반딧불을 한 획 이상 그려주세요.');
+    return;
+  }
+  nameInput.blur();
+  sending = send.disabled = nameInput.readOnly = true;
+  reportForm('반딧불을 숲으로 보내는 중…');
+  submissionId ??= crypto.randomUUID();
+  try {
+    const response = await fetch(`${pagesBackend}/api/fireflies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: submissionId, name, emotion: active, strokes }),
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!response.ok) throw new Error('Submission failed');
+    const saved = await response.json();
+    if (selectedFilter !== null) setForestFilter(null);
+    showFirefly(saved);
+    sortGallery();
+    strokes = [];
+    nameInput.value = '';
+    submissionId = undefined;
+    syncName();
+    drawInk();
+    formStatus.hidden = true;
+    navigate('/forest');
+    scroller.scrollTo(0, 0);
+  } catch {
+    reportForm('반딧불을 보내지 못했어요. 다시 시도해주세요.');
+  } finally {
+    sending = send.disabled = nameInput.readOnly = false;
+  }
+});
+
+const scroller = byId('forest-scroll');
+const gallery = byId('fireflies');
+const more = byId('more');
+const forestStatus = byId('forest-status');
+const emotionFilter = byId('emotion-filter');
+const filterLabel = byId('filter-label');
+const filterTrigger = emotionFilter.querySelector('summary');
+const filterSwatch = byId('filter-swatch');
+const allColors = `conic-gradient(${palette.map(({color}) => color).join(', ')}, ${palette[0].color})`;
+const filterChoices = [{ emotion: '모든 감정', color: allColors }, ...palette];
+let selectedFilter = null;
+filterSwatch.style.setProperty('--filter-color', allColors);
+const filterButtons = filterChoices.map(({emotion, color}, index) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('aria-pressed', String(index === 0));
+  const swatch = document.createElement('span');
+  swatch.className = 'filter-dot';
+  swatch.setAttribute('aria-hidden', 'true');
+  swatch.style.setProperty('--filter-color', color);
+  button.append(swatch, emotion);
+  button.addEventListener('click', () => {
+    emotionFilter.open = false;
+    filterTrigger.focus();
+    const choice = index === 0 ? null : index - 1;
+    if (selectedFilter === choice) return;
+    setForestFilter(choice);
+    refreshForest();
+  });
+  byId('emotion-options').append(button);
+  return button;
+});
+document.addEventListener('pointerdown', event => {
+  if (emotionFilter.open && !emotionFilter.contains(event.target)) emotionFilter.open = false;
+});
+emotionFilter.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || !emotionFilter.open) return;
+  event.preventDefault();
+  emotionFilter.open = false;
+  filterTrigger.focus();
+});
+const wide = matchMedia('(min-width: 700px)');
+const rendered = new Map();
+const svgNS = 'http://www.w3.org/2000/svg';
+let newest = 0;
+let oldest;
+let initialized = false;
+let galleryRequest;
+
+function setForestFilter(choice) {
+  selectedFilter = choice;
+  galleryRequest?.abort();
+  galleryRequest = undefined;
+  newest = 0;
+  oldest = undefined;
+  initialized = false;
+  rendered.clear();
+  gallery.replaceChildren();
+  more.hidden = true;
+  forestStatus.hidden = true;
+  scroller.scrollTo(0, 0);
+  const option = choice === null ? 0 : choice + 1;
+  filterLabel.textContent = filterChoices[option].emotion;
+  filterSwatch.style.setProperty('--filter-color', filterChoices[option].color);
+  filterButtons.forEach((button, index) => button.setAttribute('aria-pressed', String(index === option)));
+}
+
+function showFirefly(entry) {
+  if (rendered.has(entry.sequence)) return;
+  const figure = document.createElement('figure');
+  figure.className = 'firefly';
+  figure.style.setProperty('--ink', palette[entry.emotion].color);
+  figure.style.setProperty('--float-period', `${7 + (entry.sequence % 5) * .55}s`);
+  figure.style.setProperty('--float-delay', `-${(entry.sequence * 1.7) % 7}s`);
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('aria-hidden', 'true');
+  const points = entry.strokes.flat();
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const width = Math.max(...xs) - x, height = Math.max(...ys) - y;
+  const size = Math.max(width, height, 34) + 12;
+  svg.setAttribute('viewBox', `${x + (width - size) / 2} ${y + (height - size) / 2} ${size} ${size}`);
+  for (const stroke of entry.strokes) {
+    const shape = document.createElementNS(svgNS, stroke.length === 1 ? 'circle' : 'polyline');
+    if (stroke.length === 1) {
+      shape.setAttribute('cx', stroke[0][0]);
+      shape.setAttribute('cy', stroke[0][1]);
+      shape.setAttribute('r', 3.5);
+      shape.setAttribute('fill', 'currentColor');
+    } else {
+      shape.setAttribute('points', stroke.map(pair => pair.join(',')).join(' '));
+      shape.setAttribute('fill', 'none');
+      shape.setAttribute('stroke', 'currentColor');
+      shape.setAttribute('stroke-width', '7');
+      shape.setAttribute('stroke-linecap', 'round');
+      shape.setAttribute('stroke-linejoin', 'round');
+    }
+    svg.append(shape);
+  }
+  const caption = document.createElement('figcaption');
+  caption.textContent = `${entry.name}’s 반딧불`;
+  figure.append(svg, caption);
+  rendered.set(entry.sequence, figure);
+}
+
+function sortGallery() {
+  let next = gallery.firstElementChild;
+  for (const [, figure] of [...rendered.entries()].sort((a, b) => b[0] - a[0])) {
+    if (figure === next) next = next.nextElementSibling;
+    else gallery.insertBefore(figure, next);
+  }
+}
+
+async function loadGallery(older = false) {
+  if (galleryRequest) return;
+  const request = new AbortController();
+  galleryRequest = request;
+  more.disabled = true;
+  const query = new URLSearchParams();
+  if (selectedFilter !== null) query.set('emotion', selectedFilter);
+  if (older) query.set('before', oldest);
+  else if (initialized) query.set('after', newest);
+  const timeout = setTimeout(() => request.abort(), 10000);
+  try {
+    const response = await fetch(`${pagesBackend}/api/fireflies?${query}`, { signal: request.signal });
+    if (!response.ok) throw new Error('Gallery request failed');
+    const { entries, hasMore } = await response.json();
+    if (galleryRequest !== request) return;
+    if (!initialized || older) {
+      oldest = entries.at(-1)?.sequence ?? oldest;
+      more.hidden = !hasMore;
+    }
+    const before = rendered.size;
+    for (const entry of entries) {
+      newest = Math.max(newest, entry.sequence);
+      showFirefly(entry);
+    }
+    if (rendered.size !== before) sortGallery();
+    initialized = true;
+    const emptySelection = selectedFilter !== null && rendered.size === 0;
+    if (emptySelection) forestStatus.textContent = '이 감정의 반딧불은 아직 없어요.';
+    forestStatus.hidden = !emptySelection;
+  } catch {
+    if (galleryRequest !== request) return;
+    forestStatus.textContent = '반딧불을 불러오는 중이에요. 잠시 후 다시 연결합니다.';
+    forestStatus.hidden = false;
+  } finally {
+    clearTimeout(timeout);
+    if (galleryRequest === request) {
+      galleryRequest = undefined;
+      more.disabled = false;
+    }
+  }
+}
+function refreshForest() { return loadGallery(); }
+more.onclick = () => loadGallery(true);
+
+let forestDrag;
+scroller.addEventListener('pointerdown', event => {
+  if (!wide.matches || event.pointerType !== 'mouse' || event.button !== 0 || event.target.closest('button')) return;
+  forestDrag = { id: event.pointerId, x: event.clientX, scroll: scroller.scrollLeft };
+  scroller.setPointerCapture(event.pointerId);
+  scroller.classList.add('dragging');
+});
+scroller.addEventListener('pointermove', event => {
+  if (forestDrag?.id === event.pointerId) scroller.scrollLeft = forestDrag.scroll + forestDrag.x - event.clientX;
+});
+for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  scroller.addEventListener(event, () => {
+    forestDrag = null;
+    scroller.classList.remove('dragging');
+  });
+}
+scroller.addEventListener('wheel', event => {
+  if (!wide.matches || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+  event.preventDefault();
+  const multiplier = [1, 16, scroller.clientWidth][event.deltaMode] ?? 1;
+  scroller.scrollLeft += event.deltaY * multiplier;
+}, { passive: false });
+
+renderRoute();
+
+</script>
+</head>
+<body>
+  <main id="journey" hidden>
+    <section class="frame" id="start" aria-label="COMPASS 시작" hidden>
+      <img class="art" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/start.svg" alt="">
+      <button class="hotspot start-button" type="button" aria-label="START"></button>
+    </section>
+    <section class="frame" id="compass" aria-label="마음 나침반" hidden>
+      <img class="compass-heading" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/compass-heading.svg?v=2" alt="다른 사람과 나를 비교할 때, 어떤 감정을 느끼나요?">
+      <div id="carousel" tabindex="0" role="group" aria-roledescription="카드 목록" aria-label="감정 카드. 드래그하거나 왼쪽과 오른쪽 방향키로 이동">
+        <div id="cards" aria-hidden="true"></div>
+      </div>
+      <div id="swatch" aria-hidden="true"></div>
+      <img id="pink-label" class="art" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/pink.svg" alt="">
+      <span id="color-name" aria-hidden="true"></span>
+      <span class="visually-hidden" id="selected-emotion" aria-live="polite"></span>
+      <button class="hotspot choose-button" type="button" aria-label="선택하기">
+        <img src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/choose-label.svg" alt="">
+      </button>
+    </section>
+    <section class="frame" id="drawing" aria-label="반딧불 그리기" hidden>
+      <img class="art" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/drawing.svg" alt="나만의 반딧불을 그려주세요!">
+      <img class="art" id="hint" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/hint.svg" alt="손가락으로 자유롭게 그려보세요!">
+      <div id="drawing-pad">
+        <canvas id="ink" width="700" height="662" aria-label="손가락으로 반딧불을 그리는 영역"></canvas>
+      </div>
+      <button type="button" class="undo" aria-label="한 획 되돌리기" disabled>
+        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <path d="M10 5 4 11l6 6M4 11h12a7 7 0 0 1 0 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <form id="firefly-form">
+        <img class="art" id="placeholder" src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/placeholder.svg" alt="">
+        <input id="visitor-name" aria-label="Your name" placeholder="Your name" type="text" maxlength="24" autocomplete="off" enterkeyhint="done" required>
+        <p id="form-status" role="status" hidden></p>
+        <button class="hotspot send-button" type="submit" aria-label="반딧불을 숲에 보내기"></button>
+      </form>
+      <button class="hotspot back-button" type="button" aria-label="이전 화면으로 가기"></button>
+    </section>
+  </main>
+  <main id="forest" hidden>
+    <picture class="landscape">
+      <source media="(min-width: 700px)" srcset="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/forest-wide-landscape.svg">
+      <img src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/forest-phone-landscape.svg" alt="">
+    </picture>
+    <picture class="forest-heading">
+      <source media="(min-width: 700px)" srcset="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/forest-wide-heading.svg">
+      <img src="https://compass-firefly-exhibition.kwzzah.chatgpt.site/art/forest-phone-heading.svg" alt="COMPASS. 저마다 다른 반딧불을 구경해 보세요!">
+    </picture>
+    <div class="forest-filters">
+      <details id="emotion-filter" class="emotion-filter">
+        <summary class="filter-trigger">
+          <span id="filter-swatch" class="filter-dot" aria-hidden="true"></span>
+          <span class="visually-hidden">감정별로 반딧불 보기, </span>
+          <span id="filter-label">모든 감정</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </summary>
+        <div id="emotion-options" class="emotion-options" role="group" aria-label="감정 선택"></div>
+      </details>
+    </div>
+    <div id="forest-scroll" tabindex="0" aria-label="숲에 도착한 반딧불">
+      <div id="fireflies"></div>
+      <button type="button" id="more" hidden>반딧불 더 보기</button>
+    </div>
+    <p id="forest-status" role="status" hidden></p>
+  </main>
+</body>
+</html>

@@ -1,6 +1,7 @@
 const files = /* FILES */ null;
 const embeddedImages = /* IMAGES */ null;
 const palette = /* PALETTE */ null;
+const pagesOrigin = /* PAGES_ORIGIN */ null;
 const pages = new Set(['/', '/compass', '/draw', '/forest']);
 const recordFields = 'sequence, name, emotion, strokes';
 const pageSize = 36;
@@ -81,7 +82,8 @@ async function api(request, url, db) {
     return json({ entries: results.slice(0, pageSize).map(decode), hasMore: results.length > pageSize });
   }
   if (request.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
-  if (request.headers.get('Origin') !== url.origin) return json({ error: 'Invalid origin' }, 403);
+  const origin = request.headers.get('Origin');
+  if (origin !== url.origin && origin !== pagesOrigin) return json({ error: 'Invalid origin' }, 403);
   if (!request.headers.get('Content-Type')?.startsWith('application/json')) return json({ error: 'Unsupported content type' }, 415);
   const submission = await readSubmission(request);
   if (!submission || !validSubmission(submission)) return json({ error: 'Invalid firefly' }, 400);
@@ -98,12 +100,27 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/fireflies') {
+      const fromPages = request.headers.get('Origin') === pagesOrigin;
+      if (request.method === 'OPTIONS') {
+        const method = request.headers.get('Access-Control-Request-Method');
+        if (!fromPages || !['GET', 'POST'].includes(method)) return json({ error: 'Invalid preflight' }, 403);
+        return new Response(null, { status: 204, headers: {
+          'Access-Control-Allow-Origin': pagesOrigin,
+          'Access-Control-Allow-Methods': 'GET, POST',
+          'Access-Control-Allow-Headers': 'Content-Type',
+          'Vary': 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+        } });
+      }
+      let response;
       try {
-        return await api(request, url, env.DB);
+        response = await api(request, url, env.DB);
       } catch (error) {
         console.error('Firefly storage error', error);
-        return json({ error: 'Firefly storage unavailable' }, 503);
+        response = json({ error: 'Firefly storage unavailable' }, 503);
       }
+      response.headers.append('Vary', 'Origin');
+      if (fromPages) response.headers.set('Access-Control-Allow-Origin', pagesOrigin);
+      return response;
     }
     const file = files[pages.has(url.pathname) ? '/' : url.pathname];
     if (!Array.isArray(file) || !['GET', 'HEAD'].includes(request.method)) return new Response('Not found', { status: 404 });

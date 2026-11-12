@@ -2,6 +2,25 @@ import fs from 'node:fs/promises';
 
 const read = file => fs.readFile(file, 'utf8');
 const original = name => read(`originals/${name}.svg`);
+const pagesOrigin = 'https://nancoolhae.github.io';
+const pagesBackend = 'https://compass-firefly-exhibition.kwzzah.chatgpt.site';
+
+const palette = JSON.stringify(JSON.parse(await read('palette.json')));
+const html = await read('public/index.html');
+const css = await read('public/style.css');
+const app = (await read('public/app.js')).replace('/* PALETTE */ null', () => palette);
+
+if (process.argv[2] === '--github-pages') {
+  const pagesApp = app.replace("/* PAGES_BACKEND */ ''", () => JSON.stringify(pagesBackend));
+  const pagesHtml = html
+    .replaceAll('="/art/', `="${pagesBackend}/art/`)
+    .replace('<link rel="stylesheet" href="/style.css">', () => `<style>\n${css}\n</style>`)
+    .replace('<script type="module" src="/app.js"></script>', () => `<script type="module">\n${pagesApp}\n</script>`);
+  const directory = process.argv[3] ?? 'docs';
+  await fs.mkdir(directory, { recursive: true });
+  await fs.writeFile(`${directory}/index.html`, pagesHtml);
+  process.exit(0);
+}
 
 // Keep the exported SVG paths and image definitions byte-for-byte.
 function children(svg) {
@@ -111,7 +130,6 @@ for (const [type, filename, split, width, height, titleHeight] of [
   assets[`/art/forest-${type}-heading.svg`] = svg(`0 0 ${width} ${titleHeight}`, nodes.slice(split));
 }
 
-const palette = JSON.stringify(JSON.parse(await read('palette.json')));
 const embeddedImages = [];
 const imageIndexes = new Map();
 for (const [name, svg] of Object.entries(assets)) {
@@ -124,9 +142,9 @@ for (const [name, svg] of Object.entries(assets)) {
   });
 }
 const publicFiles = {
-  '/': ['text/html; charset=utf-8', await read('public/index.html')],
-  '/app.js': ['text/javascript; charset=utf-8', (await read('public/app.js')).replace('/* PALETTE */ null', () => palette)],
-  '/style.css': ['text/css; charset=utf-8', await read('public/style.css')],
+  '/': ['text/html; charset=utf-8', html],
+  '/app.js': ['text/javascript; charset=utf-8', app],
+  '/style.css': ['text/css; charset=utf-8', css],
   ...Object.fromEntries(Object.entries(assets).map(([url, svg]) => [url, ['image/svg+xml', svg]])),
 };
 
@@ -136,4 +154,5 @@ await fs.copyFile('.openai/hosting.json', 'dist/.openai/hosting.json');
 await fs.writeFile('dist/server/index.js', (await read('worker.mjs'))
   .replace('/* FILES */ null', () => JSON.stringify(publicFiles))
   .replace('/* IMAGES */ null', () => JSON.stringify(embeddedImages))
+  .replace('/* PAGES_ORIGIN */ null', () => JSON.stringify(pagesOrigin))
   .replace('/* PALETTE */ null', () => palette));

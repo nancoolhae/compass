@@ -1,4 +1,5 @@
 const palette = /* PALETTE */ null;
+const pagesBackend = /* PAGES_BACKEND */ '';
 const byId = id => document.getElementById(id);
 const journey = byId('journey');
 const forest = byId('forest');
@@ -8,7 +9,7 @@ const cards = palette.map(({emotion}, index) => {
   const img = new Image();
   img.className = 'card';
   img.alt = emotion;
-  img.src = `/art/card-${index + 1}.svg?v=2`;
+  img.src = `${pagesBackend}/art/card-${index + 1}.svg?v=2`;
   img.draggable = false;
   cardTrack.append(img);
   return img;
@@ -180,7 +181,8 @@ document.addEventListener('pointerdown', event => {
 
 let galleryTimer;
 function renderRoute() {
-  const screen = ({ '/compass': 'compass', '/draw': 'drawing', '/forest': 'forest' })[location.pathname] ?? 'start';
+  const route = pagesBackend ? location.hash.slice(1) : location.pathname;
+  const screen = ({ '/compass': 'compass', '/draw': 'drawing', '/forest': 'forest' })[route] ?? 'start';
   const next = screen === 'drawing' && history.state?.journey !== true ? 'start' : screen;
   journey.hidden = next === 'forest';
   forest.hidden = next !== 'forest';
@@ -194,7 +196,7 @@ function renderRoute() {
   }
 }
 function navigate(url) {
-  history.pushState({ journey: true }, '', url);
+  history.pushState({ journey: true }, '', pagesBackend ? `#${url}` : url);
   renderRoute();
 }
 window.addEventListener('popstate', renderRoute);
@@ -228,7 +230,7 @@ form.addEventListener('submit', async event => {
   reportForm('반딧불을 숲으로 보내는 중…');
   submissionId ??= crypto.randomUUID();
   try {
-    const response = await fetch('/api/fireflies', {
+    const response = await fetch(`${pagesBackend}/api/fireflies`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: submissionId, name, emotion: active, strokes }),
@@ -379,7 +381,7 @@ async function loadGallery(older = false) {
   else if (initialized) query.set('after', newest);
   const timeout = setTimeout(() => request.abort(), 10000);
   try {
-    const response = await fetch(`/api/fireflies?${query}`, { signal: request.signal });
+    const response = await fetch(`${pagesBackend}/api/fireflies?${query}`, { signal: request.signal });
     if (!response.ok) throw new Error('Gallery request failed');
     const { entries, hasMore } = await response.json();
     if (galleryRequest !== request) return;
