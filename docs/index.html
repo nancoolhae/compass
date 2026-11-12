@@ -125,6 +125,8 @@ button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
 #forest {
   position: fixed; inset: 0; color: #fafafa; background: #06102a; overflow: hidden;
   --heading-height: clamp(130px, 40.5vw, 230px);
+  --heading-filter-gap: 14px;
+  --filter-top: calc(var(--heading-height) + var(--heading-filter-gap));
   --filter-height: 50px;
   --filter-inset: 5.128vw;
   --float-distance: -18px;
@@ -133,7 +135,7 @@ button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
 .landscape img, .forest-heading img { display: block; width: 100%; }
 .forest-heading { top: 0; bottom: auto; }
 .forest-filters {
-  position: absolute; top: var(--heading-height); left: var(--filter-inset);
+  position: absolute; top: var(--filter-top); left: var(--filter-inset);
   z-index: 2; display: flex; align-items: flex-start; height: var(--filter-height);
 }
 .emotion-filter { position: relative; }
@@ -154,8 +156,8 @@ button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
 .emotion-options {
   position: absolute; top: calc(100% + 6px); left: 0;
   width: min(190px, calc(100vw - 2 * var(--filter-inset)));
-  max-height: calc(100vh - var(--heading-height) - 60px);
-  max-height: calc(100dvh - var(--heading-height) - 60px);
+  max-height: calc(100vh - var(--filter-top) - 60px);
+  max-height: calc(100dvh - var(--filter-top) - 60px);
   overflow-y: auto; overscroll-behavior: contain; padding: 4px;
   border: 1px solid #46526c; border-radius: 14px;
   background: #121e38; box-shadow: 0 8px 24px #0005;
@@ -175,7 +177,7 @@ button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
   transform: translateY(-1px) rotate(-45deg);
 }
 #forest-scroll {
-  position: absolute; inset: calc(var(--heading-height) + var(--filter-height)) 0 0;
+  position: absolute; inset: calc(var(--filter-top) + var(--filter-height)) 0 0;
   overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: none;
 }
 #forest-scroll::-webkit-scrollbar { display: none; }
@@ -215,7 +217,7 @@ button:focus-visible, #carousel:focus-visible, #forest-scroll:focus-visible {
   text-align: center; pointer-events: none; font-size: 13px;
 }
 @media (min-width: 700px) {
-  #forest { --heading-height: max(80px, 9.9vw); --filter-inset: 3.125vw; --float-distance: -7px; }
+  #forest { --heading-height: max(80px, 9.9vw); --heading-filter-gap: 18px; --filter-inset: 3.125vw; --float-distance: -7px; }
   #forest-scroll { overflow-x: auto; overflow-y: hidden; display: flex; cursor: grab; }
   #forest-scroll.dragging { cursor: grabbing; user-select: none; }
   #fireflies {
